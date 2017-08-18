@@ -12,7 +12,7 @@
 
 ### Notes 
 - This SDK is designed to be used as part of the backend of an application that requires user authentication. 
-- The sample code assumes that you want to offer a frictionless authentication experience to your end user, and therefore do not want to prompt them for Breezy login credentials.  You must therefore have an 
+- The sample code assumes that you want to offer a frictionless authentication experience to your end user, and therefore do not want to prompt them for Breezy login credentials.  
 - Because no user interaction is required to authenticate the user, you should be aware that any user on whose behalf your application submits a document will be automatically added to your organization. In other words, you do not need to invite users or manually provision them via the Dashboard. Instead, *your application will be treated as a trusted provider of user authentication for your organization's Breezy account*, and Breezy will assume that any users you have allowed to access the print functionality in your application are in fact authorized by you to print to your organization's printers via the Breezy infrastructure.
 
 ### Usage
