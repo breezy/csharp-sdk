@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using Breezy.Sdk.Objects;
 using Breezy.Sdk.Payloads;
 using Breezy.Sdk.Printing;
@@ -54,28 +55,70 @@ namespace Breezy.Sdk
         }
 
         /// <summary>
+        /// Makes a request to the API endpoint
+        /// </summary>
+        /// <param name="userAccessToken">OAuth token which the user has been authorized with</param>
+        /// <param name="endpoint">API endpoint</param>
+        /// <param name="httpMethod">HTTP method of the request</param>
+        /// <param name="payload">JSON payload for POST and PUT requests</param>
+        /// <returns>content of the response</returns>
+        public string MakeApiRequest(OAuthToken userAccessToken, string endpoint, HttpMethod httpMethod,
+                                     string payload = null)
+        {
+            if (userAccessToken == null) throw new ArgumentNullException("userAccessToken");
+            if (endpoint == null) throw new ArgumentNullException("endpoint");
+            if ((httpMethod == HttpMethod.Post || httpMethod == HttpMethod.Put) && payload == null)
+                throw new ArgumentException("Payload cannot be null for POST or PUT requests.");
+
+            using (var http = new HttpClient())
+            {
+                SignOAuthRequest(http, userAccessToken, httpMethod, endpoint);
+
+                HttpResponseMessage response;
+                if (httpMethod == HttpMethod.Get)
+                {
+                    response = http.GetAsync(_apiUri.AbsoluteUri + endpoint).Result;
+                }
+                else if (httpMethod == HttpMethod.Post)
+                {
+                    response = http.PostAsync(_apiUri.AbsoluteUri + endpoint,
+                                              new StringContent(payload, Encoding.UTF8, "application/json")).Result;
+                }
+                else if (httpMethod == HttpMethod.Put)
+                {
+                    response = http.PutAsync(_apiUri.AbsoluteUri + endpoint,
+                                             new StringContent(payload, Encoding.UTF8, "application/json")).Result;
+                }
+                else if (httpMethod == HttpMethod.Delete)
+                {
+                    response = http.DeleteAsync(_apiUri.AbsoluteUri + endpoint).Result;
+                }
+                else
+                {
+                    throw new NotSupportedException(String.Format("HTTP method {0} not supported.", httpMethod));
+                }
+
+                var responseBody = response.Content.ReadAsStringAsync().Result;
+
+                if (response.StatusCode != HttpStatusCode.OK)
+                    throw new BreezyApiException(
+                        String.Format(
+                            "API request failed.\r\nEndpoint: {0}\r\nResponse status code: {1}.\r\nResponse: {2}",
+                            endpoint, response.StatusCode, responseBody));
+
+                return responseBody;
+            }
+        }
+
+        /// <summary>
         /// Returns the list of the printers available for a Breezy user
         /// </summary>
         /// <param name="userAccessToken">OAuth token which the user has been authorized with</param>
         public List<Printer> GetPrinters(OAuthToken userAccessToken)
         {
-            if (userAccessToken == null) throw new ArgumentNullException("userAccessToken");
-
-            using (var http = new HttpClient())
-            {
-                SignOAuthRequest(http, userAccessToken, HttpMethod.Get, ApiEndpoints.GetUserPrinters);
-
-                var response = http.GetAsync(_apiUri.AbsoluteUri + ApiEndpoints.GetUserPrinters).Result;
-                var responseBody = response.Content.ReadAsStringAsync().Result;
-
-                if (response.StatusCode != HttpStatusCode.OK)
-                    throw new BreezyApiException(
-                        String.Format("Could not get printer list.\r\nResponse status code: {0}.\r\nResponse: {1}",
-                                      response.StatusCode, responseBody));
-
-                var printerList = JsonConvert.DeserializeObject<PrinterListMessage>(responseBody);
-                return printerList.Printers;
-            }
+            var responseBody = MakeApiRequest(userAccessToken, ApiEndpoints.GetUserPrinters, HttpMethod.Get);
+            var printerList = JsonConvert.DeserializeObject<PrinterListMessage>(responseBody);
+            return printerList.Printers;
         }
 
         /// <summary>
