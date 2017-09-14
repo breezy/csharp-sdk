@@ -40,7 +40,7 @@ var documentId = breezyApiClient.Print(Path.GetFileName(filePath), filePath, pri
 
 ### Usage from PowerShell
 ```posh
-[System.Reflection.Assembly]::LoadFile("C:\bz-pkgs\Breezy.Sdk\Breezy.Sdk.dll")
+[System.Reflection.Assembly]::LoadFile("..\Breezy.Sdk.dll")
 
 $apiClientKey = "..."
 $apiClientSecret = "..."
