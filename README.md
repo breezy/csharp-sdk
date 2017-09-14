@@ -37,3 +37,21 @@ var printers = breezyApiClient.GetPrinters(userAccessToken);
 // print a file
 var documentId = breezyApiClient.Print(Path.GetFileName(filePath), filePath, printerId, userAccessToken);
 ```
+
+### Usage from PowerShell
+```posh
+[System.Reflection.Assembly]::LoadFile("C:\bz-pkgs\Breezy.Sdk\Breezy.Sdk.dll")
+
+$apiClientKey = "..."
+$apiClientSecret = "..."
+$apiURL = "https://api.breezy.com/"
+$apiClient = New-Object Breezy.Sdk.BreezyApiClient -argumentlist $apiClientKey, $apiClientSecret, $apiURL
+
+$mdmAuthKey = "..."
+$userEmail = "user@example.org"
+$userAccessToken = $apiClient.Authorize($mdmAuthKey, $userEmail)
+
+$endpoint = "..."
+$method = "GET"
+$response = $apiClient.MakeApiRequest($userAccessToken, $endpoint, $method)
+```
