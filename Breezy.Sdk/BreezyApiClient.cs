@@ -129,7 +129,7 @@ namespace Breezy.Sdk
         /// <param name="printerId">id of a printer</param>
         /// <param name="userAccessToken">OAuth token which the user has been authorized with</param>
         /// <returns>id of a printed document</returns>
-        public int Print(string documentName, string filePath, int printerId, OAuthToken userAccessToken)
+        public int Print(string documentName, string filePath, int? printerId, OAuthToken userAccessToken)
         {
             if (filePath == null) throw new ArgumentNullException("filePath");
 
