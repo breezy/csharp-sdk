@@ -55,6 +55,25 @@ namespace Breezy.Sdk
         }
 
         /// <summary>
+        /// Authorizes the individual Breezy user
+        /// </summary>
+        /// <param name="password">MDM Auth Key of the Breezy account</param>
+        /// <param name="userEmail">email of the user being authorized</param>
+        /// <returns>OAuth access token to use for subsequent calls to the API on behalf of the authorized user</returns>
+        public OAuthToken AuthorizeWithPassword(string password, string userEmail)
+        {
+            if (password == null) throw new ArgumentNullException("password");
+            if (userEmail == null) throw new ArgumentNullException("userEmail");
+
+            var requestToken = GetRequestToken();
+            var oauthVerifier = GetOAuthVerifierWithPassword(password, userEmail, requestToken);
+            var accessToken = GetAccessToken(requestToken, oauthVerifier);
+
+            return accessToken;
+        }
+
+
+        /// <summary>
         /// Makes a request to the API endpoint
         /// </summary>
         /// <param name="userAccessToken">OAuth token which the user has been authorized with</param>
@@ -157,7 +176,7 @@ namespace Breezy.Sdk
             if (userAccessToken == null) throw new ArgumentNullException("userAccessToken");
 
             var fileType = Path.GetExtension(documentName);
-            var fileSize = (int) documentStream.Length;
+            var fileSize = (int)documentStream.Length;
             var finishingOptions = new PrinterSettings();
 
             // POST document

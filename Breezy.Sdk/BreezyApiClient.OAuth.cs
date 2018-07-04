@@ -38,10 +38,10 @@ namespace Breezy.Sdk
 
                 var content = Util.ParseFormContent(responseBody);
                 return new OAuthToken
-                    {
-                        Token = content["oauth_token"],
-                        TokenSecret = content["oauth_token_secret"]
-                    };
+                {
+                    Token = content["oauth_token"],
+                    TokenSecret = content["oauth_token_secret"]
+                };
             }
         }
 
@@ -51,12 +51,12 @@ namespace Breezy.Sdk
         private string GetOAuthVerifierWithMdmAuthKey(string mdmAuthKey, string userEmail, OAuthToken requestToken)
         {
             var message = new SsoAuthorizationMessage
-                {
-                    MdmAuthKey = mdmAuthKey,
-                    ClientKey = _clientKey,
-                    Email = userEmail,
-                    Timestamp = (long) (DateTime.UtcNow - Epoch).TotalSeconds
-                };
+            {
+                MdmAuthKey = mdmAuthKey,
+                ClientKey = _clientKey,
+                Email = userEmail,
+                Timestamp = (long)(DateTime.UtcNow - Epoch).TotalSeconds
+            };
             message.Signature = Util.GetHmacSha256Signature(message.Email + message.Timestamp, _clientSecret);
 
             using (var http = new HttpClient())
@@ -71,6 +71,36 @@ namespace Breezy.Sdk
                 if (response.StatusCode != HttpStatusCode.OK)
                     throw new BreezyApiException(
                         String.Format("Could not authorize with MDM auth key.\r\nResponse status code: {0}.\r\nResponse: {1}",
+                                      response.StatusCode, responseBody));
+
+                var content = Util.ParseFormContent(responseBody);
+                return content["oauth_verifier"];
+            }
+        }
+
+        /// <summary>
+        /// Exchanges user email and password to verify request token
+        /// </summary>
+        private string GetOAuthVerifierWithPassword(string password, string userEmail, OAuthToken requestToken)
+        {
+            var message = new AuthorizationMessage
+            {
+                Password = password,
+                Email = userEmail
+            };
+
+            using (var http = new HttpClient())
+            {
+                var url = _apiUri.AbsoluteUri + ApiEndpoints.Authorize +
+                          "?oauth_token=" + Uri.EscapeDataString(requestToken.Token);
+                var requestContent = new StringContent(JsonConvert.SerializeObject(message), Encoding.UTF8, "application/json");
+
+                var response = http.PostAsync(url, requestContent).Result;
+                var responseBody = response.Content.ReadAsStringAsync().Result;
+
+                if (response.StatusCode != HttpStatusCode.OK)
+                    throw new BreezyApiException(
+                        String.Format("Could not authorize with user email and password.\r\nResponse status code: {0}.\r\nResponse: {1}",
                                       response.StatusCode, responseBody));
 
                 var content = Util.ParseFormContent(responseBody);
@@ -104,10 +134,10 @@ namespace Breezy.Sdk
 
                 var content = Util.ParseFormContent(responseBody);
                 return new OAuthToken
-                    {
-                        Token = content["oauth_token"],
-                        TokenSecret = content["oauth_token_secret"]
-                    };
+                {
+                    Token = content["oauth_token"],
+                    TokenSecret = content["oauth_token_secret"]
+                };
             }
         }
 

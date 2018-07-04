@@ -57,6 +57,7 @@
     <Compile Include="Objects\OAuthToken.cs" />
     <Compile Include="Objects\Printer.cs" />
     <Compile Include="Objects\SymmetricEncryptionParameters.cs" />
+    <Compile Include="Payloads\AuthorizationMessage.cs" />
     <Compile Include="Payloads\DocumentStatusMessage.cs" />
     <Compile Include="Payloads\DocumentUploadMessage.cs" />
     <Compile Include="Payloads\DocumentSubmissionMessage.cs" />

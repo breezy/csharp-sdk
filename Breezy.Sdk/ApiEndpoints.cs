@@ -3,6 +3,7 @@
     internal static class ApiEndpoints
     {
         public const string RequestToken = "oauth/request_token";
+        public const string Authorize = "oauth/authorize";
         public const string SsoAuthorize = "oauth/sso/authorize";
         public const string AccessToken = "oauth/access_token";
         public const string GetUserPrinters = "user/printers/enterprise";
